@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#6b6b6b"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#ffffff">
+    <text x="60" y="100" font-size="48" font-weight="700">Aviso importante — Moto G04s</text>
+    <text x="60" y="160" font-size="28" font-weight="600">Apps preinstaladas pueden recopilar datos sin aviso</text>
+
+    <g font-size="32" font-weight="400">
+      <text x="60" y="240">• Haz copia de seguridad de tus fotos y contactos</text>
+      <text x="60" y="290">• Actualiza el sistema: Ajustes → Sistema → Actualizaciones</text>
+      <text x="60" y="340">• No instales apps fuera de la tienda oficial</text>
+    </g>
+
+    <rect x="50" y="380" width="1100" height="2" fill="#ffffff" opacity="0.25"/>
+
+    <g font-size="20" font-weight="400">
+      <text x="60" y="430">Más info y pasos para verificar: github.com/lexs201992-gif/motorola-g04s-t606-spreadtrum</text>
+    </g>
+
+    <g font-size="18" font-weight="400">
+      <text x="60" y="490">Investigador independiente: Alex de la cruz — lexs201992@gmail.com</text>
+    </g>
+  </g>
+</svg>
