@@ -38,3 +38,46 @@ adb shell pm disable-user --user 0 com.android.ims
 - These commands disable packages for the current user without uninstalling them
 - Some packages may be system apps and require device admin privileges
 - Use with caution as disabling system packages may affect device functionality
+
+---
+
+## YARA Detection Rule
+
+### Unisoc Camera Exfiltration Detection
+
+```yara
+rule Unisoc_Camera_Exfiltration_SPv1 {
+  meta:
+    description = "Detects SPRD ISP tags + privileged InMobi access"
+  strings:
+    $s1 = "ISSFrame.h"
+    $s2 = "ai_scene_enabled"
+    $s3 = "privapp-permissions-platform-inmobi.xml"
+    $p1 = "/data/jenkins/workspace/Build-LXF_M173_U_MP_SMR"
+  condition:
+    2 of ($s*) and $p1
+}
+```
+
+### Detection Details
+
+| Indicator | Type | Description |
+|-----------|------|-------------|
+| `ISSFrame.h` | String | SPRD ISP (Image Signal Processor) header file |
+| `ai_scene_enabled` | String | AI scene detection feature indicator |
+| `privapp-permissions-platform-inmobi.xml` | String | Privileged InMobi permissions configuration |
+| `/data/jenkins/workspace/Build-LXF_M173_U_MP_SMR` | Path | Jenkins build path - build artifact indicator |
+
+### How to Use
+
+Use this YARA rule to scan APK files or firmware for indicators of camera exfiltration capabilities:
+
+```bash
+yara Unisoc_Camera_Exfiltration_SPv1.yar <target_file>
+```
+
+### Rule Logic
+
+- Requires at least 2 of the 3 string indicators ($s1, $s2, $s3)
+- AND must contain the Jenkins build path ($p1)
+- This combination indicates potential Unisoc/Spreadtrum camera exfiltration backdoor
