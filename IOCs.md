@@ -16,7 +16,7 @@
 | Package Name | SHA256 Hash | Type | Risk Level |
 |---|---|---|---|
 | `com.dti.amx` | `7902116480673e44239c5a310bb5feed257692eacca25a1284a9fa613a8ebd20` | Digital Turbine Ignite | **CRITICAL** |
-| `com.spreadtrum.ims` | `d4e5f6...` | Unisoc IMS Stack | **HIGH** |
+| `com.spreadtrum.ims` | `1b938cb3920d601a38e4d80e88c87aaacc56abfa6464f3054de2430172c6f519` | Unisoc IMS Stack | **HIGH** |
 
 ### Hash Verification
 To verify package signatures on your device:
@@ -30,24 +30,28 @@ sha256sum base.apk
 ```yara
 rule malicious_dti_amx {
     meta:
-        description = "Digital Turbine suspicious APK"
-        author = "Security Research"
+        description = "Digital Turbine suspicious APK (com.dti.amx) - SHA256 match"
+        author = "lexs201992"
         date = "2026-06-28"
     strings:
-        $hash = "a1b2c3" ascii
+        $sha256 = "7902116480673e44239c5a310bb5feed257692eacca25a1284a9fa613a8ebd20" ascii
+        $pkg_name = "com.dti.amx" ascii
+        $inmobi = "inmobi" ascii
     condition:
-        $hash
+        any of ($sha256) or (all of ($pkg_name, $inmobi))
 }
 
 rule spreadtrum_ims_suspicious {
     meta:
-        description = "Unisoc IMS module with RCE capability"
-        author = "Security Research"
+        description = "Unisoc IMS module with RCE capability - SHA256 match"
+        author = "lexs201992"
         date = "2026-06-28"
     strings:
-        $hash = "d4e5f6" ascii
+        $sha256 = "1b938cb3920d601a38e4d80e88c87aaacc56abfa6464f3054de2430172c6f519" ascii
+        $pkg_name = "com.spreadtrum.ims" ascii
+        $ims_str = "ims" ascii
     condition:
-        $hash
+        any of ($sha256) or (all of ($pkg_name, $ims_str))
 }
 ```
 
