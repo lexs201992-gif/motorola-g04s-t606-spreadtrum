@@ -19,6 +19,7 @@
 | `com.spreadtrum.ims` | `1b938cb3920d601a38e4d80e88c87aaacc56abfa6464f3054de2430172c6f519` | Unisoc IMS Stack | **HIGH** |
 | `com.spreadtrum.sgps` | `4cfe803b578fd6958d236e494248585eccbc5c33a5113bda7ff1a47351e4118d` | SPRD SGPS/GNSS component | **HIGH** |
 | `com.inmobi.installer` | `1fe9c2c2e4b390f01d2bb7d90b5d219dbe85fdd42321f247a295d532c9b387d2` | InMobi installer / updater | **HIGH** |
+| `com.motorola.bach.modemstats` | `4cfe803b578fd6958d236e494248585eccbc5c33a5113bda7ff1a47351e4118d` | Motorola modemstats component | **HIGH** |
 
 ### Hash Verification
 To verify package signatures on your device:
@@ -33,6 +34,7 @@ sha256sum base.apk
 - malicious_sprd_ims.yar
 - malicious_sprd_sgps.yar
 - malicious_inmobi_installer.yar
+- malicious_motorola_modemstats.yar
 
 ---
 
