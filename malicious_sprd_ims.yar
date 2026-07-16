@@ -1,28 +1,47 @@
-rule Unisoc_IMS_Internal_Components {
+rule Unisoc_IMS_Attack_Vector_Smali {
     meta:
-        description = "Detects internal components of compromised com.spreadtrum.ims APK"
+        description = "Detects the IMS/RIL attack vector in Smali code regardless of APK obfuscation"
         author = "lexs201992-gif"
-        date = "2026-07-10"
+        date = "2026-07-16"
         severity = "CRITICAL"
         reference = "Addendum 82-F / VirusTotal Analysis"
+        technique = "Smali Pattern Matching - Logic Based Detection"
+        note = "Diseñada para detectar la lógica del ataque en código Smali dentro de APKs ofuscados. No depende de hashes ni nombres de archivos."
     
     strings:
-        // Hash del código ejecutable (Dex)
-        $dex_hash = "0b84aa8467bf89ef07bb46f4b4fb4cbbe77414ce9a829e26b75a63e04b05b3d5" ascii
+        // 1. Identificadores de Paquete y Clase (Aunque el paquete esté ofuscado, las referencias internas suelen mantener estructura o strings críticas)
+        // Buscamos referencias a la lógica IMS/Spreadtrum incluso si la clase se llama 'a.b.c'
+        $pkg_spreadtrum = "com/spreadtrum/ims" ascii wide
+        $pkg_unisoc = "com/unisoc/ims" ascii wide
         
-        // Hash del Manifiesto (Permisos y configuración)
-        $manifest_hash = "0ff6999e93126d20b5f60ec590bcb710b2363443be77f237041a93563e18912d" ascii
+        // 2. Instrucciones Smali Críticas para el Vector RIL (Radio Interface Layer)
+        // El vector de ataque suele involucrar invocaciones específicas a métodos RIL
+        $smali_invoke_ril = "invoke-virtual.*RILRequest" ascii wide
+        $smali_new_ril = "new-instance.*RILRequest" ascii wide
         
-        // Hash del archivo RIL específico de Spreadtrum
-        $ril_request_hash = "774ff07970c3c889fead83f6d9c28a52ced1089c2535cd19553378f207f963ff" ascii
+        // 3. Cadenas de Método y Lógica de Negocio (Lo que NO se puede ofuscar fácilmente sin romper la app)
+        // Los nombres de métodos nativos o strings de error suelen permanecer
+        $ril_method = "sendRILRequest" ascii wide
+        $ims_stack_err = "ims.stack" ascii wide
+        $ril_exception = "RILCommandException" ascii wide
         
-        // Hash del Certificado RSA (Para correlación con Longcheer)
-        $cert_rsa_hash = "d3eab3dffd411055d0a8c289f986e0580f8dd51ae1f6bef1c4c50e2e8109a65c" ascii
+        // 4. Patrones Hexadecimales de OpCodes Dalvik (Nivel más bajo, difícil de ofuscar)
+        // invoke-virtual (0x6E) o invoke-static (0x71) seguidos de patrones típicos de llamada a método
+        $dalvik_invoke = { 6E ?? ?? ?? ?? ?? 71 } // Patrón genérico de invocación
         
-        // Ruta del archivo propietario
-        $ril_path = "com/spreadtrum/ims/RILRequest.uau" ascii
+        // 5. Ruta interna específica (Si el atacante no ofusca la estructura de directorios del Smali)
+        $smali_path = "Lcom/spreadtrum/ims/RILRequest;" ascii
 
     condition:
-        // Detecta si cualquiera de los componentes internos coincide
-        any of ($dex_hash, $manifest_hash, $ril_request_hash, $cert_rsa_hash, $ril_path)
+        // Lógica de Detección del Vector:
+        // Opción A: Detecta la ruta de la clase específica (Alta confianza)
+        $smali_path
+        
+        // Opción B: Detecta la combinación de contexto de paquete + invocación de método RIL (Resistente a ofuscación de nombres de clase)
+        or 
+        ( ($pkg_spreadtrum or $pkg_unisoc) and ($smali_invoke_ril or $smali_new_ril or $ril_method) )
+        
+        // Opción C: Detecta la lógica pura si el paquete está totalmente ofuscado pero las llamadas al sistema RIL permanecen
+        or
+        ( $ril_method and $ims_stack_err )
 }   
