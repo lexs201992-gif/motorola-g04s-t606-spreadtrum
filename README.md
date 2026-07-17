@@ -88,15 +88,7 @@ La investigación demuestra que el compromiso no es un fallo de software aislado
 
 La mitigación efectiva mediante el bloqueo de DNS valida que el ataque requiere conectividad externa para mantener la persistencia y la estabilidad del payload en el dispositivo.
 
----
-
-### Comentario Final y Disponibilidad para Rapid7/AttackerKB
-
-Este reporte consolida la evidencia técnica de un ataque de cadena de suministro activo. La correlación entre los logs de Jenkins, los certificados X.509 y el tráfico de red capturado en NextDNS proporciona una prueba contundente del vector de ataque.
-
-**Nota para el equipo de Rapid7 / AttackerKB:**
-Cuento con acceso a los datos crudos de las trazas de red (PCAP), logs completos de NextDNS, hashes de los certificados X.509 comprometidos y capturas de la estructura del workspace de Jenkins (`Build-LXF_M173_U_MP_SMR_user`). Estoy a su entera disposición para coordinar la entrega de esta evidencia detallada a través de los canales seguros que indiquen, con el fin de enriquecer el advisory, validar los IOCs y facilitar la emisión de alertas tempranas para la comunidad de seguridad y los usuarios afectados. Quedo a la espera de sus instrucciones para proceder con el envío de los artefactos técnicos.
-
+Subscribe to releases of this repository for immediate updates on new YARA rules and threat intelligence regarding Unisoc/Longcheer supply chain compromises. Major updates are announced via Twitter @lexs17
 
 
 
