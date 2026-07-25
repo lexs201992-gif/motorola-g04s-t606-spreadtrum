@@ -32,6 +32,9 @@ Ver `CVE_INVESTIGATION.md` - fingerprint completo del paciente cero.
 Kernel: `5.15.178-android13-8-00006-g0c6055fd2d8b-ab13363910`
 Bootloader: `lion-2026-03-18-15:42:53_LOCAL`
 
+### **Análisis C2 durante investigación T606**
+- [Analisys-of-C2-data-during-t606-reserch.md](./Analisys-of-C2-data-during-t606-reserch.md)
+
 ### **Contacto**
 **Investigador:** lexs201992 - Cancún, México  
 **Email:** lexs201992@gmail.com  
@@ -47,7 +50,7 @@ Final assadment for public investigation
 # Assessment Final: Correlación de Compromiso en Cadena de Suministro (ODM Longcheer)
 
 ## 1. Resumen Ejecutivo
-Se ha identificado y validado una arquitectura de ataque persistente en dispositivos móviles (chipset Unisoc, OEM Motorola) originada en la infraestructura de construcción del ODM Longcheer. El ataque utiliza una correlación precisa entre **Jenkins** (inyección), **FOTA** (activación), **AWS** (autenticación) y **WireGuard** (exfiltración). La evidencia forense mediante NextDNS confirma que la operatividad del malware depende estrictamente de la resolución de dominios específicos; su bloqueo mitiga los colapsos del kernel (*kernel panic*) y detiene la exfiltración.
+Se ha identificado y validado una arquitectura de ataque persistente en dispositivos móviles (chipset Unisoc, OEM Motorola) originada en la infraestructura de construcción del ODM Longcheer. El [...]
 
 ## 2. Arquitectura del Ataque: Flujo de Entrada y Salida
 
@@ -55,20 +58,20 @@ Se ha identificado y validado una arquitectura de ataque persistente en disposit
 El servidor **Jenkins** (`Build-LXF_M173_U_MP_SMR_user`) no actúa solo como compilador, sino como el **orquestador del ataque**.
 *   **Mecanismo:** El pipeline de Jenkins inyecta payloads maliciosos directamente en las imágenes del firmware durante el proceso de compilación.
 *   **Activación vía Red:** El sistema en el dispositivo permanece latente hasta que recibe una señal de "activación" desde los servidores de gestión FOTA.
-*   **Dominios Críticos:** La conexión a `fmc.longcheer.com` es el detonante. Sin esta conexión, el módulo malicioso no recibe las instrucciones para modificar el estado del kernel o activar los servicios de telecomunicaciones alterados.
-*   **Correlación:** El *kernel panic* observado ocurre cuando el dispositivo intenta ejecutar el payload recibido pero falla por integridad de memoria o conflictos de recursos al ser bloqueada parcialmente la comunicación. Al bloquear el dominio en NextDNS, se corta el flujo de entrada de comandos, estabilizando el sistema.
+*   **Dominios Críticos:** La conexión a `fmc.longcheer.com` es el detonante. Sin esta conexión, el módulo malicioso no recibe las instrucciones para modificar el estado del kernel o activar l[...]
+*   **Correlación:** El *kernel panic* observado ocurre cuando el dispositivo intenta ejecutar el payload recibido pero falla por integridad de memoria o conflictos de recursos al ser bloqueada p[...]
 
 ### B. WireGuard y TUN/TAP para Exfiltración (Salida de Datos)
 Una vez activado el módulo mediante el canal de entrada, se establece un túnel de salida de alta velocidad y bajo perfil.
 *   **Tecnología:** Uso de interfaces **TUN/TAP** a nivel de kernel para crear un adaptador de red virtual (`tun0`).
-*   **Ocultamiento:** El tráfico se encapsula en **WireGuard** (UDP), lo que permite que la exfiltración de datos sensibles (ubicación, mensajes, credenciales) parezca tráfico VPN legítimo o ruido de red, evadiendo inspecciones profundas de paquetes (DPI) básicas.
+*   **Ocultamiento:** El tráfico se encapsula en **WireGuard** (UDP), lo que permite que la exfiltración de datos sensibles (ubicación, mensajes, credenciales) parezca tráfico VPN legítimo o [...]
 *   **Función:** Este canal es la "tubería" por donde sale la data robada hacia los servidores de comando y control (C2), utilizando la infraestructura de nube para camuflar el destino final.
 
 ### C. Infraestructura AWS y Handshakes de Certificados
 La comunicación entre el **SIM Toolkit**, el **Enterprise Manager Provisioning** y la nube de **AWS** es el eslabón que valida la identidad del dispositivo comprometido.
 *   **Handshake TLS/X.509:** Los servicios del sistema (SIM Toolkit/Provisioning) inician conexiones HTTPS/MQTT hacia endpoints de AWS (`s3-us-west-2.amazonaws.com`, `apecloud.com`).
-*   **Uso de Certificados Robados:** Para establecer estas conexiones, el malware utiliza los certificados **X.509 PEM** y las claves privadas clonadas del entorno de Jenkins del ODM. Esto permite que el dispositivo se autentique exitosamente ante los servidores AWS como un "dispositivo legítimo de Longcheer/Motorola".
-*   **Persistencia:** Al tener certificados válidos firmados por una CA de confianza (aunque comprometida), los firewalls tradicionales permiten este tráfico, facilitando la exfiltración y la recepción de actualizaciones de configuración.
+*   **Uso de Certificados Robados:** Para establecer estas conexiones, el malware utiliza los certificados **X.509 PEM** y las claves privadas clonadas del entorno de Jenkins del ODM. Esto permite[...]
+*   **Persistencia:** Al tener certificados válidos firmados por una CA de confianza (aunque comprometida), los firewalls tradicionales permiten este tráfico, facilitando la exfiltración y la r[...]
 
 ## 3. Evidencia de Correlación de Dominios (NextDNS)
 El análisis de tráfico confirma la dependencia crítica de los siguientes dominios para la operación del ciclo de ataque:
@@ -78,17 +81,14 @@ El análisis de tráfico confirma la dependencia crítica de los siguientes domi
 | `fmc.longcheer.com` | **Inyección/Control:** Servidor FOTA del ODM que entrega el payload inicial. | Detiene la activación del malware y previene *kernel panic*. |
 | `ppmxfa.com` | **C2/Rescate:** Servidor de gestión remota (Kill Switch/Rescue). | Evita la activación de modos de emergencia manipulados y reinicios cíclicos. |
 | `argo2.svcmot.com` | **Telemetría Comprometida:** Puente para exfiltración camuflada como datos OEM. | Corta un canal secundario de fuga de información. |
-| `apecloud.com` / `s3...aws` | **Almacenamiento/Exfiltración:** Destino final de los datos robados y hosting de payloads. | Bloquea la salida de datos sensibles y la descarga de módulos adicionales. |
+| `apecloud.com` / `s3...aws` | **Almacenamiento/Exfiltración:** Destino final de los datos robados y hosting de payloads. | Bloquea la salida de datos sensibles y la descarga de módulos adicion[...] |
 
 ## 4. Conclusión Técnica
-La investigación demuestra que el compromiso no es un fallo de software aislado, sino una **vulnerabilidad sistémica en la cadena de suministro**. El ODM Longcheer ha integrado capacidades de monitoreo y control remoto que, al estar mal aseguradas (o deliberadamente maliciosas), permiten:
+La investigación demuestra que el compromiso no es un fallo de software aislado, sino una **vulnerabilidad sistémica en la cadena de suministro**. El ODM Longcheer ha integrado capacidades de mo[...]
 1.  **Entrada:** Inyección de código vía Jenkins/FOTA.
 2.  **Autenticación:** Validación de identidad mediante certificados robados en handshakes AWS.
 3.  **Salida:** Exfiltración masiva de datos mediante túneles WireGuard en el kernel.
 
 La mitigación efectiva mediante el bloqueo de DNS valida que el ataque requiere conectividad externa para mantener la persistencia y la estabilidad del payload en el dispositivo.
 
-Subscribe to releases of this repository for immediate updates on new YARA rules and threat intelligence regarding Unisoc/Longcheer supply chain compromises. Major updates are announced via Twitter @lexs17
-
-
-
+Subscribe to releases of this repository for immediate updates on new YARA rules and threat intelligence regarding Unisoc/Longcheer supply chain compromises. Major updates are announced via Twitte[...]
